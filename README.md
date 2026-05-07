@@ -9,43 +9,41 @@ This repository contains the DRS (Decision Review System) Developer Agent. It us
 
 ## Installation
 
-You can set up this project easily using the provided scripts.
+1. **Clone the repository** (if you haven't already):
+   ```bash
+   git clone https://github.com/cyberinnovator/drs.git
+   cd drs
+   ```
 
-### Windows
+2. **Create and activate a virtual environment**:
+   - **Windows**:
+     ```cmd
+     python -m venv venv
+     venv\Scripts\activate
+     ```
+   - **Linux/macOS**:
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate
+     ```
 
-Double-click or run `setup.bat` in your terminal to create a virtual environment and install the required dependencies:
-
-```cmd
-setup.bat
-```
-
-### Linux / macOS
-
-Make the setup script executable and run it:
-
-```bash
-chmod +x setup.sh
-./setup.sh
-```
+3. **Install the dependencies**:
+   ```bash
+   pip install --upgrade pip
+   pip install -r req.txt
+   ```
 
 ## Running the Application
 
-### Windows
-
-Double-click or run `start.bat`:
-
-```cmd
-start.bat
-```
-
-### Linux / macOS
-
-Make the start script executable and run it:
-
-```bash
-chmod +x start.sh
-./start.sh
-```
+1. Ensure your virtual environment is activated.
+2. Navigate to the core project directory:
+   ```bash
+   cd "developer agent"
+   ```
+3. Run the Flask application:
+   ```bash
+   python main.py
+   ```
 
 Once started, the Flask application will be available at `http://127.0.0.1:5000`. You can open this URL in your web browser to view the tracking interface.
 
