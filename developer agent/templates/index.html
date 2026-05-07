@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surgical DRS - Modular Version</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">🏏</span>
+                <span class="logo-text">SURGICAL DRS</span>
+                <span class="version-tag">MODULAR v2.0</span>
+            </div>
+            <div class="status-indicator">
+                <div class="dot pulse"></div>
+                <span id="system-status">SYSTEM READY</span>
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Left: Video Panel -->
+            <section class="panel video-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Video Feed</h2>
+                    <div class="panel-actions">
+                        <button id="reset-btn" class="btn btn-secondary">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="viewport-container" id="video-viewport">
+                    <img id="main-frame" src="" alt="Video feed window">
+                    <canvas id="roi-canvas" class="viewport-overlay"></canvas>
+                    <div class="loading-overlay" id="loader">
+                        <div class="spinner"></div>
+                        <p>Initializing Video...</p>
+                    </div>
+                </div>
+
+                <div class="playback-controls">
+                    <div class="scrub-bar">
+                        <div id="scrub-handle" class="handle"></div>
+                        <div class="progress-bar-bg"><div id="progress" class="progress-bar"></div></div>
+                    </div>
+                    <div class="button-row">
+                        <button id="step-back-btn" class="btn btn-icon" title="Previous Frame (Left Arrow)">
+                            <svg class="icon"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+                        </button>
+                        <button id="play-pause-btn" class="btn btn-primary btn-large" title="Play/Pause (P)">
+                            <svg id="play-icon" class="icon"><path d="M8 5v14l11-7z"/></svg>
+                            <svg id="pause-icon" class="icon hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            <span id="play-text">PLAY</span>
+                        </button>
+                        <button id="step-forward-btn" class="btn btn-icon" title="Next Frame (Space / Right Arrow)">
+                            <svg class="icon"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pipeline Strip - Always Visible -->
+                <div class="pipeline-strip" id="pipeline-strip">
+                    <div class="pipeline-header">⚙️ AI PROCESSING PIPELINE</div>
+                    <div class="pipeline-cells" id="pipeline-cells">
+                        <!-- 7 cells for stages -->
+                        <div class="pipeline-cell" id="cell-1_crop">
+                            <div class="cell-label">1. Original Crop</div>
+                            <img src="" class="cell-img" />
+                        </div>
+                        <div class="pipeline-cell" id="cell-2_roi_masked">
+                            <div class="cell-label">2. ROI Masked</div>
+                            <img src="" class="cell-img" />
+                        </div>
+                        <div class="pipeline-cell" id="cell-3_motion_diff">
+                            <div class="cell-label">3. Motion Diff</div>
+                            <img src="" class="cell-img" />
+                        </div>
+                        <div class="pipeline-cell" id="cell-4_motion_mask">
+                            <div class="cell-label">4. B&W Mask</div>
+                            <img src="" class="cell-img" />
+                        </div>
+                        <div class="pipeline-cell" id="cell-5_motion_only">
+                            <div class="cell-label">5. Motion Only</div>
+                            <img src="" class="cell-img" />
+                        </div>
+                        <div class="pipeline-cell" id="cell-6_grayscale">
+                            <div class="cell-label">6. Grayscale</div>
+                            <img src="" class="cell-img" />
+                        </div>
+                        <div class="pipeline-cell" id="cell-7_clahe_enhanced">
+                            <div class="cell-label">7. CLAHE→YOLO</div>
+                            <img src="" class="cell-img" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Logic & Stats -->
+            <aside class="panel side-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Telemetry</h2>
+                </div>
+                
+                <div class="stats-list">
+                    <div class="stat-card">
+                        <span class="stat-label">Frame Index</span>
+                        <span class="stat-value" id="val-frame-idx">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Playback Status</span>
+                        <span class="stat-value highlight" id="val-playback">STOPPED</span>
+                    </div>
+                </div>
+
+                <!-- Calibration Controls -->
+                <div class="panel-section calibration-section">
+                    <h3 class="section-subtitle">CALIBRATION</h3>
+                    <div class="cal-controls">
+                        <button id="cal-start-btn" class="btn btn-secondary btn-full">
+                            <span class="icon">📐</span> MAIN ROI (YELLOW)
+                        </button>
+                        <button id="cal-pitch-btn" class="btn btn-secondary btn-full">
+                            <span class="icon">🟦</span> PITCHING ZONE (BLUE)
+                        </button>
+                        <button id="cal-bowler-btn" class="btn btn-secondary btn-full">
+                            <span class="icon">🟩</span> BOWLER ROI (GREEN)
+                        </button>
+                        <div id="cal-actions" class="hidden">
+                            <p id="cal-hint-text" class="cal-hint">Click 4 points for the pitch base</p>
+                            <div class="button-row-small">
+                                <button id="cal-clear-btn" class="btn btn-danger">CLEAR</button>
+                                <button id="cal-save-btn" class="btn btn-success">CONFIRM</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bowler Configuration -->
+                <div class="panel-section">
+                    <h3 class="section-subtitle">BOWLER CONFIG</h3>
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <label class="config-label">BOWLER ARM</label>
+                            <div class="btn-group">
+                                <button id="btn-arm-left" class="btn btn-toggle">LEFT</button>
+                                <button id="btn-arm-right" class="btn btn-toggle active">RIGHT</button>
+                            </div>
+                        </div>
+                        <div class="config-item">
+                            <label class="config-label">WICKET SIDE</label>
+                            <div class="btn-group">
+                                <button id="btn-wicket-over" class="btn btn-toggle active">OVER</button>
+                                <button id="btn-wicket-around" class="btn btn-toggle">AROUND</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/player.js') }}"></script>
+</body>
+</html>
